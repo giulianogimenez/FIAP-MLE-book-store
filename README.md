@@ -483,6 +483,7 @@ Na documentação Swagger você pode:
 | Método | Endpoint | Descrição | Role Necessária |
 |--------|----------|-----------|-----------------|
 | GET | `/api/v1/books` | Listar livros (paginação, busca) | user/admin |
+| GET | `/api/v1/books/search` | Buscar por título e/ou categoria | user/admin |
 | GET | `/api/v1/books/:id` | Buscar livro por ID | user/admin |
 | POST | `/api/v1/books` | Criar novo livro | user/admin |
 | PUT | `/api/v1/books/:id` | Atualizar livro | user/admin |
@@ -500,6 +501,34 @@ Na documentação Swagger você pode:
   - `search` (string): Buscar por título ou autor
 - **Response**: Lista de livros + metadados de paginação
 - **Exemplo**: `/api/v1/books?page=1&limit=5&search=Python`
+
+**GET /api/v1/books/search**
+- **Descrição**: Busca livros por título e/ou categoria (filtros combinados)
+- **Query Params**: 
+  - `title` (string, opcional): Busca parcial no título (case-insensitive)
+  - `category` (string, opcional): Busca exata por categoria (case-insensitive)
+- **Response**: Lista de livros encontrados (array vazio se nenhum resultado)
+- **Status**: 200 (sempre, mesmo sem resultados)
+- **Exemplos**: 
+  - `/api/v1/books/search?title=Python` - Busca por título
+  - `/api/v1/books/search?category=Technology` - Busca por categoria
+  - `/api/v1/books/search?title=Machine&category=Technology` - Busca combinada
+- **Exemplo de resposta**:
+```json
+{
+  "books": [
+    {
+      "id": 1,
+      "title": "Python Machine Learning",
+      "author": "Sebastian Raschka",
+      "isbn": "978-1789955750",
+      "price": 44.99,
+      "category": "Technology"
+    }
+  ],
+  "total": 1
+}
+```
 
 **GET /api/v1/books/:id**
 - **Descrição**: Busca livro específico por ID
@@ -687,7 +716,48 @@ curl http://localhost:5000/api/v1/categories \
 }
 ```
 
-### 4. Iniciar Scraping (Admin Only)
+### 4. Buscar Livros por Título e/ou Categoria
+
+```bash
+# Buscar apenas por título
+curl "http://localhost:5000/api/v1/books/search?title=Python" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Buscar apenas por categoria
+curl "http://localhost:5000/api/v1/books/search?category=Technology" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Buscar combinando título e categoria
+curl "http://localhost:5000/api/v1/books/search?title=Machine&category=Technology" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response:**
+```json
+{
+  "books": [
+    {
+      "id": 1,
+      "title": "Python Machine Learning",
+      "author": "Sebastian Raschka",
+      "isbn": "978-1789955750",
+      "price": 44.99,
+      "category": "Technology"
+    }
+  ],
+  "total": 1
+}
+```
+
+**Sem resultados:**
+```json
+{
+  "books": [],
+  "total": 0
+}
+```
+
+### 5. Iniciar Scraping (Admin Only)
 
 ```bash
 # Login como admin
@@ -723,14 +793,14 @@ curl -X POST http://localhost:5000/api/v1/scraping/trigger \
 }
 ```
 
-### 5. Verificar Status do Scraping
+### 6. Verificar Status do Scraping
 
 ```bash
 curl http://localhost:5000/api/v1/scraping/jobs/job_1 \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 ```
 
-### 6. Exemplo Python Completo
+### 7. Exemplo Python Completo
 
 ```python
 import requests

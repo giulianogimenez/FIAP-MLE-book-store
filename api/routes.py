@@ -129,6 +129,83 @@ def get_book(book_id):
     return jsonify(result)
 
 
+@api_bp.route('/books/search', methods=['GET'])
+def search_books():
+    """
+    Buscar livros por título e/ou categoria
+    ---
+    tags:
+      - Books
+    parameters:
+      - name: title
+        in: query
+        type: string
+        required: false
+        description: "Buscar por título (parcial, case-insensitive)"
+        example: "Python"
+      - name: category
+        in: query
+        type: string
+        required: false
+        description: "Buscar por categoria (exata, case-insensitive)"
+        example: "Technology"
+    responses:
+      200:
+        description: Lista de livros encontrados
+        schema:
+          type: object
+          properties:
+            books:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  title:
+                    type: string
+                    example: "Python Machine Learning"
+                  author:
+                    type: string
+                    example: "Sebastian Raschka"
+                  isbn:
+                    type: string
+                    example: "978-1789955750"
+                  price:
+                    type: number
+                    example: 44.99
+                  category:
+                    type: string
+                    example: "Technology"
+            total:
+              type: integer
+              example: 2
+              description: "Número total de livros encontrados"
+        examples:
+          application/json:
+            books:
+              - id: 1
+                title: "Python Machine Learning"
+                author: "Sebastian Raschka"
+                isbn: "978-1789955750"
+                price: 44.99
+                category: "Technology"
+              - id: 2
+                title: "Clean Code"
+                author: "Robert C. Martin"
+                isbn: "978-0132350884"
+                price: 39.99
+                category: "Technology"
+            total: 2
+    """
+    title = request.args.get('title', None, type=str)
+    category = request.args.get('category', None, type=str)
+    
+    result = book_controller.search_books(title=title, category=category)
+    return jsonify(result)
+
+
 @api_bp.route('/books', methods=['POST'])
 def create_book():
     """

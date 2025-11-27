@@ -179,4 +179,31 @@ class BookController:
             'categories': category_details,
             'total': len(sorted_categories)
         }
+    
+    def search_books(self, title=None, category=None):
+        """
+        Search books by title and/or category
+        """
+        filtered_books = self.books
+        
+        # Filter by title if provided
+        if title:
+            title_lower = title.lower()
+            filtered_books = [
+                book for book in filtered_books
+                if title_lower in book['title'].lower()
+            ]
+        
+        # Filter by category if provided
+        if category:
+            category_lower = category.lower()
+            filtered_books = [
+                book for book in filtered_books
+                if book.get('category', 'General').lower() == category_lower
+            ]
+        
+        return {
+            'books': filtered_books,
+            'total': len(filtered_books)
+        }
 
