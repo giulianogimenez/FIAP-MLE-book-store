@@ -4,10 +4,12 @@ Flask REST API Application
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from flasgger import Swagger
 from api.config import Config
 from api.routes import api_bp
 from api.auth.routes import auth_bp
 from api.scraping_routes import scraping_bp
+from api.swagger_config import swagger_config, swagger_template
 
 
 def create_app(config_class=Config):
@@ -22,6 +24,9 @@ def create_app(config_class=Config):
     
     # Initialize JWT
     jwt = JWTManager(app)
+    
+    # Initialize Swagger
+    Swagger(app, config=swagger_config, template=swagger_template)
     
     # JWT error handlers
     @jwt.expired_token_loader
@@ -53,6 +58,15 @@ def create_app(config_class=Config):
     # Health check endpoint
     @app.route('/health')
     def health():
+        """
+        Health check da API
+        ---
+        tags:
+          - Health
+        responses:
+          200:
+            description: API está saudável
+        """
         return jsonify({
             'status': 'healthy',
             'service': 'book-store-api',
@@ -63,9 +77,19 @@ def create_app(config_class=Config):
     # API info endpoint
     @app.route('/api/v1')
     def api_info():
+        """
+        Informações sobre a API
+        ---
+        tags:
+          - Health
+        responses:
+          200:
+            description: Informações e endpoints disponíveis
+        """
         return jsonify({
             'name': 'Book Store API',
             'version': '2.0.0',
+            'documentation': '/api/v1/docs',
             'endpoints': {
                 'books': '/api/v1/books',
                 'auth': {
