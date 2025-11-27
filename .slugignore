@@ -1,0 +1,11 @@
+# Files to ignore when deploying to Heroku
+*.md
+!README.md
+tests/
+examples/
+.git/
+.vscode/
+.idea/
+*.log
+data/
+
