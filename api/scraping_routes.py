@@ -47,7 +47,10 @@ def trigger_scraping():
               description: Número de páginas a fazer scraping (default: 2)
             format:
               type: string
-              enum: [json, csv, both]
+              enum:
+                - json
+                - csv
+                - both
               example: both
               description: Formato de saída (default: both)
             output:
@@ -144,7 +147,11 @@ def get_job_status(job_id):
               example: job_1
             status:
               type: string
-              enum: [pending, running, completed, failed]
+              enum:
+                - pending
+                - running
+                - completed
+                - failed
               example: completed
             parameters:
               type: object
@@ -231,7 +238,11 @@ def list_jobs():
                     example: job_1
                   status:
                     type: string
-                    enum: [pending, running, completed, failed]
+                    enum:
+                      - pending
+                      - running
+                      - completed
+                      - failed
                     example: completed
                   url:
                     type: string

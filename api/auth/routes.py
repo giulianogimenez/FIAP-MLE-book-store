@@ -59,7 +59,9 @@ def login():
                   type: string
                 role:
                   type: string
-                  enum: [user, admin]
+                  enum:
+                    - user
+                    - admin
             message:
               type: string
               example: Login successful
@@ -223,7 +225,9 @@ def get_current_user():
                 role:
                   type: string
                   example: admin
-                  enum: [user, admin]
+                  enum:
+                    - user
+                    - admin
       401:
         description: Não autorizado
       404:
