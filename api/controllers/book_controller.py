@@ -146,4 +146,37 @@ class BookController:
             'average_price': round(avg_price, 2),
             'categories': categories
         }
+    
+    def get_categories(self):
+        """
+        Get all unique book categories
+        """
+        if not self.books:
+            return {
+                'categories': [],
+                'total': 0
+            }
+        
+        # Extract unique categories
+        categories = set()
+        for book in self.books:
+            cat = book.get('category', 'General')
+            categories.add(cat)
+        
+        # Sort categories alphabetically
+        sorted_categories = sorted(list(categories))
+        
+        # Count books per category
+        category_details = []
+        for cat in sorted_categories:
+            count = sum(1 for book in self.books if book.get('category', 'General') == cat)
+            category_details.append({
+                'name': cat,
+                'count': count
+            })
+        
+        return {
+            'categories': category_details,
+            'total': len(sorted_categories)
+        }
 

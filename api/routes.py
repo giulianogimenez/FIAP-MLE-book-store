@@ -328,3 +328,48 @@ def get_stats():
     """
     result = book_controller.get_statistics()
     return jsonify(result)
+
+
+@api_bp.route('/categories', methods=['GET'])
+def get_categories():
+    """
+    Listar todas as categorias de livros disponíveis
+    ---
+    tags:
+      - Books
+    responses:
+      200:
+        description: Lista de categorias disponíveis
+        schema:
+          type: object
+          properties:
+            categories:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: Technology
+                    description: Nome da categoria
+                  count:
+                    type: integer
+                    example: 5
+                    description: Número de livros nesta categoria
+            total:
+              type: integer
+              example: 3
+              description: Número total de categorias disponíveis
+        examples:
+          application/json:
+            categories:
+              - name: Fiction
+                count: 3
+              - name: Technology
+                count: 5
+              - name: Business
+                count: 2
+            total: 3
+    """
+    result = book_controller.get_categories()
+    return jsonify(result)

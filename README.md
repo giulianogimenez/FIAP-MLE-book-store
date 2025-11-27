@@ -227,6 +227,7 @@ Na documentação Swagger você pode:
 | POST | `/api/v1/books` | Criar novo livro |
 | PUT | `/api/v1/books/:id` | Atualizar livro |
 | DELETE | `/api/v1/books/:id` | Deletar livro |
+| GET | `/api/v1/categories` | Listar todas as categorias disponíveis |
 | GET | `/api/v1/stats` | Estatísticas da coleção |
 
 ### Scraping (Requer Admin)
@@ -275,7 +276,35 @@ curl -X POST http://localhost:5000/api/v1/books \
   }'
 ```
 
-### 3. Iniciar Scraping (Admin Only)
+### 3. Listar Categorias
+
+```bash
+curl http://localhost:5000/api/v1/categories \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response:**
+```json
+{
+  "categories": [
+    {
+      "name": "Technology",
+      "count": 5
+    },
+    {
+      "name": "Fiction",
+      "count": 3
+    },
+    {
+      "name": "Business",
+      "count": 2
+    }
+  ],
+  "total": 3
+}
+```
+
+### 4. Iniciar Scraping (Admin Only)
 
 ```bash
 # Login como admin
@@ -311,14 +340,14 @@ curl -X POST http://localhost:5000/api/v1/scraping/trigger \
 }
 ```
 
-### 4. Verificar Status do Scraping
+### 5. Verificar Status do Scraping
 
 ```bash
 curl http://localhost:5000/api/v1/scraping/jobs/job_1 \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 ```
 
-### 5. Exemplo Python Completo
+### 6. Exemplo Python Completo
 
 ```python
 import requests
