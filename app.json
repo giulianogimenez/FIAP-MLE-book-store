@@ -1,0 +1,42 @@
+{
+  "name": "FIAP MLE Book Store",
+  "description": "Book Store API with Flask and Web Scraper",
+  "repository": "https://github.com/giulianogimenez/FIAP-MLE-book-store",
+  "logo": "https://www.fiap.com.br/favicon.ico",
+  "keywords": ["python", "flask", "api", "web-scraping", "beautifulsoup"],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "FLASK_APP": {
+      "description": "Flask app entry point",
+      "value": "api.app"
+    },
+    "FLASK_ENV": {
+      "description": "Flask environment",
+      "value": "production"
+    },
+    "FLASK_DEBUG": {
+      "description": "Flask debug mode",
+      "value": "False"
+    },
+    "API_HOST": {
+      "description": "API host",
+      "value": "0.0.0.0"
+    },
+    "API_PORT": {
+      "description": "API port (Heroku will override this)",
+      "value": "5000"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "addons": []
+}
+

@@ -1,272 +1,729 @@
 # FIAP MLE - Book Store Project
 
-Projeto Python com dois módulos principais:
-1. **API REST** usando Flask para gerenciamento de livros
-2. **Data Scraping** para coletar informações de livros de websites
+Projeto Python completo com três módulos principais:
+1. **API REST** usando Flask com autenticação JWT
+2. **Web Scraping** para coletar informações de livros
+3. **Sistema de Autenticação** com controle de acesso por roles
 
 ## 📁 Estrutura do Projeto
 
 ```
 FIAP-MLE-book-store/
 ├── api/                          # Módulo da API REST
-│   ├── __init__.py
-│   ├── app.py                    # Aplicação Flask principal
-│   ├── config.py                 # Configurações
-│   ├── routes.py                 # Rotas da API
-│   └── controllers/              # Lógica de negócio
-│       ├── __init__.py
-│       └── book_controller.py
+│   ├── auth/                     # Sistema de autenticação
+│   │   ├── models.py            # Usuários (carrega de CSV)
+│   │   ├── routes.py            # Login, refresh, register
+│   │   └── decorators.py        # Proteção de rotas (admin_required)
+│   ├── controllers/
+│   │   ├── book_controller.py   # Lógica de livros
+│   │   └── scraping_controller.py # Lógica de scraping
+│   ├── app.py                   # Aplicação Flask + JWT
+│   ├── config.py                # Configurações
+│   ├── routes.py                # Rotas de livros
+│   └── scraping_routes.py       # Rotas de scraping
 │
 ├── scraper/                      # Módulo de Web Scraping
-│   ├── __init__.py
-│   ├── base_scraper.py          # Classe base para scrapers
+│   ├── base_scraper.py          # Classe base
 │   ├── book_scraper.py          # Scraper de livros
-│   ├── data_processor.py        # Processamento de dados
-│   └── main.py                  # Script principal do scraper
+│   ├── data_processor.py        # Processamento (JSON/CSV)
+│   └── main.py                  # CLI do scraper
 │
-├── tests/                        # Testes unitários
-│   ├── __init__.py
+├── data/
+│   ├── users.csv                # Usuários da API
+│   └── output/                  # Dados de scraping
+│
+├── tests/                       # Testes unitários
 │   ├── test_api.py
-│   └── test_scraper.py
+│   ├── test_auth.py
+│   ├── test_scraper.py
+│   └── test_scraping.py
 │
-├── data/                         # Diretório para dados (criado automaticamente)
-│   └── output/                   # Dados processados
+├── examples/                    # Exemplos de uso
+│   ├── api_examples.py
+│   ├── scraper_examples.py
+│   └── auth_scraping_example.py
 │
-├── .env.example                  # Exemplo de variáveis de ambiente
-├── .gitignore                    # Arquivos ignorados pelo Git
-├── requirements.txt              # Dependências do projeto
-├── setup.py                      # Configuração do pacote
-├── run_api.py                    # Script para rodar a API
-├── run_scraper.py               # Script para rodar o scraper
-└── README.md                     # Este arquivo
+├── scripts/
+│   └── create_user.py          # Gerenciar usuários
+│
+├── requirements.txt             # Dependências
+├── run_api.py                  # Iniciar API
+├── run_scraper.py              # Iniciar scraper
+├── Procfile                    # Deploy Heroku
+└── README.md                   # Este arquivo
 ```
 
 ## 🚀 Configuração do Ambiente
 
-### 1. Clone o repositório
-```bash
-cd FIAP-MLE-book-store
-```
+### 1. Criar ambiente virtual e instalar dependências
 
-### 2. Crie um ambiente virtual
 ```bash
 # Criar ambiente virtual
-python -m venv venv
+python3 -m venv venv
 
-# Ativar no macOS/Linux
+# Ativar (macOS/Linux)
 source venv/bin/activate
 
-# Ativar no Windows
+# Ativar (Windows)
 venv\Scripts\activate
-```
 
-### 3. Instale as dependências
-```bash
+# Instalar dependências
 pip install -r requirements.txt
 ```
 
-### 4. Configure as variáveis de ambiente
-```bash
-# Copiar o arquivo de exemplo
-cp .env.example .env
+### 2. Iniciar a API
 
-# Editar o .env com suas configurações
-```
-
-## 📚 Usando a API REST
-
-### Iniciar o servidor
 ```bash
 python run_api.py
 ```
 
-A API estará disponível em: `http://localhost:5000`
+A API estará disponível em: **http://localhost:5000**
 
-### Endpoints Disponíveis
+**📖 Documentação Swagger:** http://localhost:5000/api/v1/docs
 
-#### Health Check
+---
+
+## 🔐 Autenticação e Login
+
+### Usuários Padrão
+
+A aplicação vem com dois usuários pré-configurados:
+
+| Usuário | Senha | Role | Permissões |
+|---------|-------|------|------------|
+| `admin` | `admin123` | admin | Acesso completo + Scraping |
+| `user` | `user123` | user | Apenas consulta de livros |
+
+> ⚠️ **Importante:** Em produção, altere essas senhas!
+
+### Como Fazer Login
+
+#### 1. Login e Obter Token
+
+**Request:**
 ```bash
-GET http://localhost:5000/health
-```
-
-#### Listar todos os livros
-```bash
-GET http://localhost:5000/api/v1/books
-GET http://localhost:5000/api/v1/books?page=1&limit=10&search=python
-```
-
-#### Buscar livro específico
-```bash
-GET http://localhost:5000/api/v1/books/1
-```
-
-#### Criar novo livro
-```bash
-POST http://localhost:5000/api/v1/books
-Content-Type: application/json
-
-{
-  "title": "Python for Data Science",
-  "author": "John Doe",
-  "isbn": "978-1234567890",
-  "price": 49.99,
-  "category": "Technology"
-}
-```
-
-#### Atualizar livro
-```bash
-PUT http://localhost:5000/api/v1/books/1
-Content-Type: application/json
-
-{
-  "title": "Updated Title",
-  "price": 39.99
-}
-```
-
-#### Deletar livro
-```bash
-DELETE http://localhost:5000/api/v1/books/1
-```
-
-#### Estatísticas
-```bash
-GET http://localhost:5000/api/v1/stats
-```
-
-### Exemplo com curl
-```bash
-# Listar livros
-curl http://localhost:5000/api/v1/books
-
-# Criar livro
-curl -X POST http://localhost:5000/api/v1/books \
+curl -X POST http://localhost:5000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"title":"Test Book","author":"Test Author","isbn":"123","price":29.99}'
+  -d '{
+    "username": "admin",
+    "password": "admin123"
+  }'
 ```
 
-## 🕷️ Usando o Web Scraper
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "username": "admin",
+    "role": "admin"
+  },
+  "message": "Login successful"
+}
+```
 
-### Executar scraping básico
+#### 2. Usar o Token nas Requisições
+
+Copie o `access_token` e use no header `Authorization`:
+
 ```bash
+# Salvar token em variável
+TOKEN="seu_access_token_aqui"
+
+# Usar em requisições
+curl http://localhost:5000/api/v1/books \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### 3. Exemplo Python
+
+```python
+import requests
+
+# 1. Login
+response = requests.post(
+    "http://localhost:5000/api/v1/auth/login",
+    json={
+        "username": "admin",
+        "password": "admin123"
+    }
+)
+
+tokens = response.json()
+access_token = tokens['access_token']
+
+# 2. Usar token nas requisições
+headers = {"Authorization": f"Bearer {access_token}"}
+
+# 3. Fazer requisições autenticadas
+books = requests.get(
+    "http://localhost:5000/api/v1/books",
+    headers=headers
+)
+print(books.json())
+```
+
+### Renovar Token (Refresh)
+
+O access token expira em 1 hora. Use o refresh token para obter um novo:
+
+```bash
+curl -X POST http://localhost:5000/api/v1/auth/refresh \
+  -H "Authorization: Bearer <refresh_token>"
+```
+
+---
+
+## 📚 Documentação da API (Swagger)
+
+### 🎯 Acesse a Documentação Interativa
+
+A API possui documentação completa com Swagger/OpenAPI, disponível em:
+
+**URL:** http://localhost:5000/api/v1/docs
+
+Na documentação Swagger você pode:
+- ✅ Ver todos os endpoints disponíveis
+- ✅ Testar as requisições diretamente no navegador
+- ✅ Ver exemplos de request/response
+- ✅ Entender os parâmetros e schemas
+- ✅ Autenticar com JWT e testar endpoints protegidos
+
+### Como Usar o Swagger
+
+1. **Acesse:** http://localhost:5000/api/v1/docs
+2. **Fazer Login:**
+   - Clique em "POST /api/v1/auth/login"
+   - Clique em "Try it out"
+   - Use: `{"username": "admin", "password": "admin123"}`
+   - Execute e copie o `access_token`
+3. **Autorizar:**
+   - Clique no botão "Authorize" 🔒 (topo da página)
+   - Digite: `Bearer seu_access_token_aqui`
+   - Clique em "Authorize"
+4. **Testar Endpoints:**
+   - Agora você pode testar qualquer endpoint protegido!
+
+---
+
+## 📚 Endpoints da API
+
+### Autenticação (Público)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/v1/auth/login` | Login e obter tokens |
+| POST | `/api/v1/auth/refresh` | Renovar access token |
+| GET | `/api/v1/auth/me` | Informações do usuário logado |
+| POST | `/api/v1/auth/register` | Registrar novo usuário |
+
+### Books (Requer Token)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/api/v1/books` | Listar livros (paginação, busca) |
+| GET | `/api/v1/books/:id` | Buscar livro por ID |
+| POST | `/api/v1/books` | Criar novo livro |
+| PUT | `/api/v1/books/:id` | Atualizar livro |
+| DELETE | `/api/v1/books/:id` | Deletar livro |
+| GET | `/api/v1/stats` | Estatísticas da coleção |
+
+### Scraping (Requer Admin)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/v1/scraping/trigger` | Iniciar scraping ⚠️ |
+| GET | `/api/v1/scraping/jobs` | Listar jobs de scraping ⚠️ |
+| GET | `/api/v1/scraping/jobs/:id` | Status do job ⚠️ |
+
+> ⚠️ = Requer role `admin`
+
+---
+
+## 🎯 Exemplos de Uso
+
+### 1. Login e Listar Livros
+
+```bash
+# 1. Login
+curl -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}' \
+  > login.json
+
+# 2. Extrair token
+TOKEN=$(cat login.json | jq -r '.access_token')
+
+# 3. Listar livros
+curl http://localhost:5000/api/v1/books \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### 2. Criar Livro
+
+```bash
+curl -X POST http://localhost:5000/api/v1/books \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Python Machine Learning",
+    "author": "Sebastian Raschka",
+    "isbn": "978-1234567890",
+    "price": 49.99,
+    "category": "Technology"
+  }'
+```
+
+### 3. Iniciar Scraping (Admin Only)
+
+```bash
+# Login como admin
+curl -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}' \
+  > admin_login.json
+
+ADMIN_TOKEN=$(cat admin_login.json | jq -r '.access_token')
+
+# Iniciar scraping
+curl -X POST http://localhost:5000/api/v1/scraping/trigger \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pages": 3,
+    "format": "both",
+    "output": "meus_livros"
+  }'
+```
+
+**Response:**
+```json
+{
+  "message": "Scraping job started",
+  "job_id": "job_1",
+  "parameters": {
+    "url": "http://books.toscrape.com",
+    "pages": 3,
+    "format": "both",
+    "output": "meus_livros"
+  }
+}
+```
+
+### 4. Verificar Status do Scraping
+
+```bash
+curl http://localhost:5000/api/v1/scraping/jobs/job_1 \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+```
+
+### 5. Exemplo Python Completo
+
+```python
+import requests
+import time
+
+BASE_URL = "http://localhost:5000/api/v1"
+
+# 1. Login como admin
+login = requests.post(
+    f"{BASE_URL}/auth/login",
+    json={"username": "admin", "password": "admin123"}
+).json()
+
+token = login['access_token']
+headers = {"Authorization": f"Bearer {token}"}
+
+# 2. Iniciar scraping
+job = requests.post(
+    f"{BASE_URL}/scraping/trigger",
+    json={"pages": 2, "format": "json"},
+    headers=headers
+).json()
+
+print(f"Job iniciado: {job['job_id']}")
+
+# 3. Aguardar e verificar status
+time.sleep(10)
+status = requests.get(
+    f"{BASE_URL}/scraping/jobs/{job['job_id']}",
+    headers=headers
+).json()
+
+if status['status'] == 'completed':
+    print(f"✅ {status['results']['books_count']} livros coletados!")
+    print(f"Arquivos: {status['results']['files']}")
+```
+
+**Ou use o exemplo pronto:**
+```bash
+python examples/auth_scraping_example.py
+```
+
+---
+
+## 👥 Gerenciar Usuários
+
+### Listar Usuários
+
+```bash
+python scripts/create_user.py list
+```
+
+### Criar Novo Usuário
+
+```bash
+# Usuário regular
+python scripts/create_user.py create -u joao -p senha123
+
+# Administrador
+python scripts/create_user.py create -u maria -p senha456 -r admin
+```
+
+### Via API (Register)
+
+```bash
+curl -X POST http://localhost:5000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "novousuario",
+    "password": "senha123"
+  }'
+```
+
+> Novos usuários são automaticamente salvos em `data/users.csv`
+
+---
+
+## 🕷️ Web Scraping (via CLI)
+
+Além do endpoint da API, você pode usar o scraper diretamente:
+
+```bash
+# Scraping básico
 python run_scraper.py
+
+# Customizado
+python run_scraper.py --pages 5 --format both --output livros
+
+# Ajuda
+python run_scraper.py --help
 ```
 
-### Com opções personalizadas
-```bash
-# Scraping com mais páginas
-python run_scraper.py --pages 5
+**Opções:**
+- `--url`: URL base para scraping
+- `--pages`: Número de páginas (1-50)
+- `--format`: json, csv, ou both
+- `--output`: Nome do arquivo de saída
 
-# Especificar formato de saída
-python run_scraper.py --format json --output books_data
-
-# URL customizada
-python run_scraper.py --url "http://books.toscrape.com" --pages 3
-```
-
-### Opções disponíveis
-- `--url`: URL base para scraping (padrão: http://books.toscrape.com)
-- `--pages`: Número de páginas para scraping (padrão: 2)
-- `--output`: Nome do arquivo de saída sem extensão (padrão: books)
-- `--format`: Formato de saída - json, csv, ou both (padrão: both)
-
-### Dados gerados
-Os dados serão salvos em `data/output/`:
-- `books.json` - Dados em formato JSON
-- `books.csv` - Dados em formato CSV
+---
 
 ## 🧪 Executar Testes
 
 ```bash
-# Executar todos os testes
+# Todos os testes
 pytest
 
-# Executar com cobertura
-pytest --cov=api --cov=scraper
+# Apenas autenticação
+pytest tests/test_auth.py -v
 
-# Executar testes específicos
-pytest tests/test_api.py
-pytest tests/test_scraper.py
+# Apenas scraping
+pytest tests/test_scraping.py -v
+
+# Com cobertura
+pytest --cov=api --cov=scraper --cov-report=html
 ```
+
+---
 
 ## 📦 Dependências Principais
 
-### API
-- **Flask** - Framework web
-- **Flask-CORS** - Suporte a CORS
-- **Flask-RESTful** - Extensão para APIs REST
+### API & Autenticação
+- **Flask 3.0.0** - Framework web
+- **Flask-JWT-Extended 4.5.3** - Autenticação JWT
+- **Flask-CORS 4.0.0** - Suporte a CORS
+- **Gunicorn 21.2.0** - Servidor de produção
 
-### Scraping
-- **requests** - Cliente HTTP
-- **BeautifulSoup4** - Parser HTML/XML
-- **lxml** - Parser XML/HTML rápido
-- **Selenium** - Automação de navegador (para sites dinâmicos)
-- **Scrapy** - Framework de scraping avançado
+### Web Scraping
+- **requests 2.31.0** - Cliente HTTP
+- **beautifulsoup4 4.12.2** - Parser HTML
+- **lxml 4.9.3** - Parser rápido
 
-### Processamento de Dados
-- **pandas** - Manipulação de dados
-- **numpy** - Computação numérica
+### Processamento
+- **pandas 2.1.3** - Manipulação de dados
+- **numpy 1.26.2** - Computação numérica
 
-## 🔧 Desenvolvimento
+---
 
-### Adicionar novas rotas na API
-1. Edite `api/routes.py` para adicionar novos endpoints
-2. Implemente a lógica em `api/controllers/`
+## 🐳 Deploy com Docker
 
-### Criar novo scraper
-1. Crie uma classe herdando de `BaseScraper`
-2. Implemente os métodos `scrape()` e `parse_item()`
+### Rodar com Docker
 
-Exemplo:
-```python
-from scraper.base_scraper import BaseScraper
+```bash
+# Build e run
+docker-compose up
 
-class MyCustomScraper(BaseScraper):
-    def scrape(self, *args, **kwargs):
-        # Sua lógica aqui
-        pass
-    
-    def parse_item(self, element):
-        # Parse do item
-        pass
+# Apenas API
+docker-compose up api
+
+# Background
+docker-compose up -d
 ```
 
-## 📝 Boas Práticas
+### Configuração
 
-1. **Scraping Responsável**
-   - Use delays entre requisições
-   - Respeite robots.txt
-   - Não sobrecarregue servidores
+O `docker-compose.yml` está configurado para rodar:
+- API na porta 5000
+- Scraper em background
 
-2. **API**
-   - Valide todos os inputs
-   - Use códigos HTTP apropriados
-   - Documente seus endpoints
+---
 
-3. **Código**
-   - Mantenha o código limpo e documentado
-   - Escreva testes para novas funcionalidades
-   - Use type hints quando possível
+## 🚀 Deploy no Heroku
+
+### 1. Criar app no Heroku
+
+```bash
+heroku create seu-app-name
+```
+
+### 2. Configurar variáveis
+
+```bash
+heroku config:set FLASK_ENV=production
+heroku config:set FLASK_DEBUG=False
+heroku config:set JWT_SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
+```
+
+### 3. Deploy
+
+```bash
+git push heroku main
+```
+
+### 4. Verificar
+
+```bash
+heroku logs --tail
+heroku open
+```
+
+---
+
+## 🔒 Segurança
+
+### Tokens JWT
+
+- **Access Token**: Expira em 1 hora
+- **Refresh Token**: Expira em 30 dias
+
+### Configurar Chave Secreta
+
+```bash
+# Gerar chave segura
+python -c "import secrets; print(secrets.token_hex(32))"
+
+# Adicionar ao .env
+JWT_SECRET_KEY=sua_chave_gerada_aqui
+SECRET_KEY=outra_chave_segura
+```
+
+### Alterar Senhas Padrão
+
+```bash
+# Editar data/users.csv
+# Ou recriar usuários
+
+python scripts/create_user.py create -u admin -p nova_senha_forte -r admin
+```
+
+---
+
+## 🛠️ Comandos Úteis
+
+### Make Commands
+
+```bash
+make help          # Ver todos os comandos
+make install       # Instalar dependências
+make run-api       # Rodar API
+make test          # Rodar testes
+make clean         # Limpar temporários
+```
+
+### API
+
+```bash
+# Rodar API
+python run_api.py
+
+# Health check
+curl http://localhost:5000/health
+
+# Info da API
+curl http://localhost:5000/api/v1
+```
+
+### Scraper
+
+```bash
+# CLI
+python run_scraper.py --pages 3
+
+# Exemplos
+python examples/scraper_examples.py
+```
+
+---
+
+## 📊 Fluxo Completo: Login → Scraping
+
+```bash
+#!/bin/bash
+
+# 1. Login
+echo "🔐 Fazendo login..."
+curl -s -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}' \
+  > login_response.json
+
+TOKEN=$(cat login_response.json | jq -r '.access_token')
+echo "✅ Token obtido!"
+
+# 2. Iniciar scraping
+echo "🕷️ Iniciando scraping..."
+curl -s -X POST http://localhost:5000/api/v1/scraping/trigger \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"pages": 2, "format": "both"}' \
+  > job_response.json
+
+JOB_ID=$(cat job_response.json | jq -r '.job_id')
+echo "✅ Job $JOB_ID iniciado!"
+
+# 3. Aguardar conclusão
+echo "⏳ Aguardando conclusão..."
+sleep 15
+
+# 4. Verificar resultado
+curl -s http://localhost:5000/api/v1/scraping/jobs/$JOB_ID \
+  -H "Authorization: Bearer $TOKEN" \
+  | jq '.'
+
+echo "✅ Concluído! Verifique data/output/"
+```
+
+---
 
 ## 🐛 Troubleshooting
 
-### Erro de instalação de lxml
+### Erro: Token expired
+
 ```bash
-# macOS
-brew install libxml2 libxslt
-pip install lxml
-
-# Ubuntu/Debian
-sudo apt-get install libxml2-dev libxslt-dev
-pip install lxml
+# Use o refresh token para obter novo access token
+curl -X POST http://localhost:5000/api/v1/auth/refresh \
+  -H "Authorization: Bearer <refresh_token>"
 ```
 
-### Porta 5000 já em uso
-Altere a porta no `.env`:
+### Erro: 403 Forbidden (Admin required)
+
+```bash
+# Certifique-se de usar credenciais de admin
+# username: admin, password: admin123
 ```
-API_PORT=8000
+
+### Erro: Connection refused
+
+```bash
+# Certifique-se de que a API está rodando
+python run_api.py
 ```
+
+### Erro: Module not found
+
+```bash
+# Reinstalar dependências
+pip install -r requirements.txt
+```
+
+---
+
+## 📝 Estrutura de Dados
+
+### CSV de Usuários (`data/users.csv`)
+
+```csv
+username,password_hash,role
+admin,$2b$12$...,admin
+user,$2b$12$...,user
+```
+
+### Dados de Scraping (`data/output/books.csv`)
+
+```csv
+title,price,rating,in_stock,url
+"Book Title",19.99,5,True,"http://..."
+```
+
+---
+
+## 🎓 Exemplos Prontos
+
+### Python
+
+```bash
+# Exemplos da API
+python examples/api_examples.py
+
+# Exemplos do scraper
+python examples/scraper_examples.py
+
+# Exemplos de autenticação + scraping
+python examples/auth_scraping_example.py
+```
+
+---
+
+## 📚 Recursos Adicionais
+
+### Documentação de Dependências
+
+- [Flask](https://flask.palletsprojects.com/)
+- [Flask-JWT-Extended](https://flask-jwt-extended.readthedocs.io/)
+- [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/)
+- [Pandas](https://pandas.pydata.org/)
+
+### Arquivos de Configuração
+
+- `.env.example` - Variáveis de ambiente
+- `Procfile` - Configuração Heroku
+- `docker-compose.yml` - Configuração Docker
+- `pyproject.toml` - Configuração do projeto
+
+---
+
+## 🎯 Quick Start
+
+```bash
+# 1. Setup
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 2. Rodar API
+python run_api.py
+
+# 3. Acessar documentação Swagger
+# Abra no navegador: http://localhost:5000/api/v1/docs
+
+# 4. Ou testar via cURL
+curl -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+```
+
+---
 
 ## 📄 Licença
 
@@ -275,11 +732,20 @@ Este projeto é para fins educacionais - FIAP MLE.
 ## 👥 Contribuindo
 
 1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
+2. Crie uma branch (`git checkout -b feature/NovaFeature`)
+3. Commit suas mudanças (`git commit -m 'Add NovaFeature'`)
+4. Push para a branch (`git push origin feature/NovaFeature`)
 5. Abra um Pull Request
+
+---
 
 ## 📞 Suporte
 
-Para dúvidas ou problemas, abra uma issue no repositório.
+Para dúvidas ou problemas, abra uma [Issue](https://github.com/giulianogimenez/FIAP-MLE-book-store/issues).
+
+---
+
+**🚀 Versão:** 2.0.0  
+**📅 Última atualização:** 27/11/2025
+
+**✅ Pronto para usar! Faça login com `admin`/`admin123` e comece a desenvolver!**

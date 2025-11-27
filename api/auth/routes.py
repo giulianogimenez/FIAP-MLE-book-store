@@ -17,23 +17,72 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/login', methods=['POST'])
 def login():
     """
-    Login endpoint
-    
-    Request body:
-        {
-            "username": "admin",
-            "password": "admin123"
-        }
-    
-    Response:
-        {
-            "access_token": "eyJ...",
-            "refresh_token": "eyJ...",
-            "user": {
-                "username": "admin",
-                "role": "admin"
-            }
-        }
+    Login e obter tokens JWT
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: Credenciais de login
+        schema:
+          type: object
+          required:
+            - username
+            - password
+          properties:
+            username:
+              type: string
+              example: admin
+              description: Nome de usuário (admin ou user)
+            password:
+              type: string
+              example: admin123
+              description: Senha do usuário
+    responses:
+      200:
+        description: Login realizado com sucesso
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+              description: Token de acesso JWT (válido por 1 hora)
+            refresh_token:
+              type: string
+              description: Token de renovação (válido por 30 dias)
+            user:
+              type: object
+              properties:
+                username:
+                  type: string
+                role:
+                  type: string
+                  enum: [user, admin]
+            message:
+              type: string
+              example: Login successful
+      400:
+        description: Credenciais faltando
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+            message:
+              type: string
+      401:
+        description: Credenciais inválidas
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Invalid credentials
+            message:
+              type: string
+              example: Username or password is incorrect
     """
     data = request.get_json()
     
@@ -84,15 +133,35 @@ def login():
 @jwt_required(refresh=True)
 def refresh():
     """
-    Refresh token endpoint
-    
-    Headers:
-        Authorization: Bearer <refresh_token>
-    
-    Response:
-        {
-            "access_token": "eyJ..."
-        }
+    Renovar access token usando refresh token
+    ---
+    tags:
+      - Authentication
+    security:
+      - Bearer: []
+    parameters:
+      - name: Authorization
+        in: header
+        type: string
+        required: true
+        description: Bearer {refresh_token}
+        default: Bearer your_refresh_token_here
+    responses:
+      200:
+        description: Token renovado com sucesso
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+              description: Novo token de acesso
+            message:
+              type: string
+              example: Token refreshed successfully
+      401:
+        description: Token inválido ou expirado
+      404:
+        description: Usuário não encontrado
     """
     current_user = get_jwt_identity()
     claims = get_jwt()
@@ -126,16 +195,39 @@ def refresh():
 @jwt_required()
 def get_current_user():
     """
-    Get current user info
-    
-    Headers:
-        Authorization: Bearer <access_token>
-    
-    Response:
-        {
-            "username": "admin",
-            "role": "admin"
-        }
+    Obter informações do usuário logado
+    ---
+    tags:
+      - Authentication
+    security:
+      - Bearer: []
+    parameters:
+      - name: Authorization
+        in: header
+        type: string
+        required: true
+        description: Bearer {access_token}
+        default: Bearer your_access_token_here
+    responses:
+      200:
+        description: Informações do usuário
+        schema:
+          type: object
+          properties:
+            user:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: admin
+                role:
+                  type: string
+                  example: admin
+                  enum: [user, admin]
+      401:
+        description: Não autorizado
+      404:
+        description: Usuário não encontrado
     """
     current_user = get_jwt_identity()
     claims = get_jwt()
@@ -155,13 +247,50 @@ def get_current_user():
 @auth_bp.route('/register', methods=['POST'])
 def register():
     """
-    Register new user (demo only - in production, restrict this)
-    
-    Request body:
-        {
-            "username": "newuser",
-            "password": "password123"
-        }
+    Registrar novo usuário
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: Dados do novo usuário
+        schema:
+          type: object
+          required:
+            - username
+            - password
+          properties:
+            username:
+              type: string
+              example: novousuario
+              description: Nome de usuário (único)
+            password:
+              type: string
+              example: senha123
+              description: Senha do usuário
+    responses:
+      201:
+        description: Usuário criado com sucesso
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: User created successfully
+            user:
+              type: object
+              properties:
+                username:
+                  type: string
+                role:
+                  type: string
+                  example: user
+      400:
+        description: Dados inválidos
+      409:
+        description: Usuário já existe
     """
     data = request.get_json()
     

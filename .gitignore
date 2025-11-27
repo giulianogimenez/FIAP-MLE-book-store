@@ -48,8 +48,11 @@ ENV/
 # Scraped data
 data/scraped/
 data/raw/
-*.csv
-*.json
+data/output/*.csv
+data/output/*.json
+
+# Users data (keep template, ignore actual data)
+data/users.csv
 
 # Testing
 .pytest_cache/

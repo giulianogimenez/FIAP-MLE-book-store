@@ -11,8 +11,66 @@ book_controller = BookController()
 @api_bp.route('/books', methods=['GET'])
 def get_books():
     """
-    Get all books
-    Query params: page, limit, search
+    Listar todos os livros
+    ---
+    tags:
+      - Books
+    parameters:
+      - name: page
+        in: query
+        type: integer
+        default: 1
+        description: Número da página
+      - name: limit
+        in: query
+        type: integer
+        default: 10
+        description: Livros por página
+      - name: search
+        in: query
+        type: string
+        description: Buscar por título ou autor
+    responses:
+      200:
+        description: Lista de livros
+        schema:
+          type: object
+          properties:
+            books:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  title:
+                    type: string
+                    example: Clean Code
+                  author:
+                    type: string
+                    example: Robert C. Martin
+                  isbn:
+                    type: string
+                    example: 978-0132350884
+                  price:
+                    type: number
+                    example: 39.99
+                  category:
+                    type: string
+                    example: Technology
+            total:
+              type: integer
+              example: 2
+            page:
+              type: integer
+              example: 1
+            limit:
+              type: integer
+              example: 10
+            total_pages:
+              type: integer
+              example: 1
     """
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 10, type=int)
@@ -25,7 +83,45 @@ def get_books():
 @api_bp.route('/books/<int:book_id>', methods=['GET'])
 def get_book(book_id):
     """
-    Get a specific book by ID
+    Buscar livro específico por ID
+    ---
+    tags:
+      - Books
+    parameters:
+      - name: book_id
+        in: path
+        type: integer
+        required: true
+        description: ID do livro
+    responses:
+      200:
+        description: Detalhes do livro
+        schema:
+          type: object
+          properties:
+            book:
+              type: object
+              properties:
+                id:
+                  type: integer
+                title:
+                  type: string
+                author:
+                  type: string
+                isbn:
+                  type: string
+                price:
+                  type: number
+                category:
+                  type: string
+      404:
+        description: Livro não encontrado
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Book not found
     """
     result = book_controller.get_book_by_id(book_id)
     if result.get('error'):
@@ -36,7 +132,75 @@ def get_book(book_id):
 @api_bp.route('/books', methods=['POST'])
 def create_book():
     """
-    Create a new book
+    Criar novo livro
+    ---
+    tags:
+      - Books
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: Dados do livro
+        schema:
+          type: object
+          required:
+            - title
+            - author
+            - isbn
+            - price
+          properties:
+            title:
+              type: string
+              example: Python Machine Learning
+              description: Título do livro
+            author:
+              type: string
+              example: Sebastian Raschka
+              description: Autor do livro
+            isbn:
+              type: string
+              example: 978-1234567890
+              description: ISBN do livro
+            price:
+              type: number
+              example: 49.99
+              description: Preço do livro
+            category:
+              type: string
+              example: Technology
+              description: Categoria do livro (opcional)
+    responses:
+      201:
+        description: Livro criado com sucesso
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Book created successfully
+            book:
+              type: object
+              properties:
+                id:
+                  type: integer
+                title:
+                  type: string
+                author:
+                  type: string
+                isbn:
+                  type: string
+                price:
+                  type: number
+                category:
+                  type: string
+      400:
+        description: Dados inválidos
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Missing required field
     """
     data = request.get_json()
     result = book_controller.create_book(data)
@@ -46,7 +210,48 @@ def create_book():
 @api_bp.route('/books/<int:book_id>', methods=['PUT'])
 def update_book(book_id):
     """
-    Update an existing book
+    Atualizar livro existente
+    ---
+    tags:
+      - Books
+    parameters:
+      - name: book_id
+        in: path
+        type: integer
+        required: true
+        description: ID do livro
+      - name: body
+        in: body
+        required: true
+        description: Campos a atualizar
+        schema:
+          type: object
+          properties:
+            title:
+              type: string
+              example: Python Machine Learning 3rd Edition
+            author:
+              type: string
+            isbn:
+              type: string
+            price:
+              type: number
+              example: 44.99
+            category:
+              type: string
+    responses:
+      200:
+        description: Livro atualizado com sucesso
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Book updated successfully
+            book:
+              type: object
+      404:
+        description: Livro não encontrado
     """
     data = request.get_json()
     result = book_controller.update_book(book_id, data)
@@ -58,7 +263,33 @@ def update_book(book_id):
 @api_bp.route('/books/<int:book_id>', methods=['DELETE'])
 def delete_book(book_id):
     """
-    Delete a book
+    Deletar livro
+    ---
+    tags:
+      - Books
+    parameters:
+      - name: book_id
+        in: path
+        type: integer
+        required: true
+        description: ID do livro
+    responses:
+      200:
+        description: Livro deletado com sucesso
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Book deleted successfully
+      404:
+        description: Livro não encontrado
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Book not found
     """
     result = book_controller.delete_book(book_id)
     if result.get('error'):
@@ -69,8 +300,31 @@ def delete_book(book_id):
 @api_bp.route('/stats', methods=['GET'])
 def get_stats():
     """
-    Get statistics about the book collection
+    Obter estatísticas da coleção
+    ---
+    tags:
+      - Books
+    responses:
+      200:
+        description: Estatísticas da coleção de livros
+        schema:
+          type: object
+          properties:
+            total_books:
+              type: integer
+              example: 10
+              description: Total de livros na coleção
+            average_price:
+              type: number
+              example: 42.50
+              description: Preço médio dos livros
+            categories:
+              type: object
+              description: Contagem de livros por categoria
+              example:
+                Technology: 5
+                Fiction: 3
+                Business: 2
     """
     result = book_controller.get_statistics()
     return jsonify(result)
-
