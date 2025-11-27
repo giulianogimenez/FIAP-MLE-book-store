@@ -37,8 +37,8 @@ def trigger_scraping():
           properties:
             url:
               type: string
-              example: http://books.toscrape.com
-              description: URL base para scraping (default: http://books.toscrape.com)
+              example: "http://books.toscrape.com"
+              description: "URL base para scraping (padrão: http://books.toscrape.com)"
             pages:
               type: integer
               example: 3
@@ -244,9 +244,9 @@ def list_jobs():
                       - completed
                       - failed
                     example: completed
-                  url:
-                    type: string
-                    example: http://books.toscrape.com
+                url:
+                  type: string
+                  example: "http://books.toscrape.com"
                   pages:
                     type: integer
                     example: 3
