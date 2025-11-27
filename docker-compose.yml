@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: bookstore-api
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=api.app
+      - FLASK_ENV=development
+      - FLASK_DEBUG=True
+      - API_PORT=5000
+      - API_HOST=0.0.0.0
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    command: python run_api.py
+    networks:
+      - bookstore-network
+
+  scraper:
+    build: .
+    container_name: bookstore-scraper
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    environment:
+      - SCRAPING_DELAY=1
+    command: python run_scraper.py --pages 3
+    depends_on:
+      - api
+    networks:
+      - bookstore-network
+
+networks:
+  bookstore-network:
+    driver: bridge
+
