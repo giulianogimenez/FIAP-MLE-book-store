@@ -3,8 +3,11 @@ Flask REST API Application
 """
 from flask import Flask, jsonify
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from api.config import Config
 from api.routes import api_bp
+from api.auth.routes import auth_bp
+from api.scraping_routes import scraping_bp
 
 
 def create_app(config_class=Config):
@@ -17,8 +20,35 @@ def create_app(config_class=Config):
     # Enable CORS
     CORS(app)
     
+    # Initialize JWT
+    jwt = JWTManager(app)
+    
+    # JWT error handlers
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        return jsonify({
+            'error': 'Token expired',
+            'message': 'The token has expired'
+        }), 401
+    
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error):
+        return jsonify({
+            'error': 'Invalid token',
+            'message': 'Signature verification failed'
+        }), 401
+    
+    @jwt.unauthorized_loader
+    def missing_token_callback(error):
+        return jsonify({
+            'error': 'Authorization required',
+            'message': 'Request does not contain an access token'
+        }), 401
+    
     # Register blueprints
     app.register_blueprint(api_bp, url_prefix='/api/v1')
+    app.register_blueprint(auth_bp, url_prefix='/api/v1/auth')
+    app.register_blueprint(scraping_bp, url_prefix='/api/v1/scraping')
     
     # Health check endpoint
     @app.route('/health')
@@ -26,7 +56,29 @@ def create_app(config_class=Config):
         return jsonify({
             'status': 'healthy',
             'service': 'book-store-api',
-            'version': '1.0.0'
+            'version': '2.0.0',
+            'features': ['books', 'auth', 'scraping']
+        })
+    
+    # API info endpoint
+    @app.route('/api/v1')
+    def api_info():
+        return jsonify({
+            'name': 'Book Store API',
+            'version': '2.0.0',
+            'endpoints': {
+                'books': '/api/v1/books',
+                'auth': {
+                    'login': 'POST /api/v1/auth/login',
+                    'refresh': 'POST /api/v1/auth/refresh',
+                    'me': 'GET /api/v1/auth/me'
+                },
+                'scraping': {
+                    'trigger': 'POST /api/v1/scraping/trigger (admin)',
+                    'jobs': 'GET /api/v1/scraping/jobs (admin)',
+                    'job_status': 'GET /api/v1/scraping/jobs/<job_id> (admin)'
+                }
+            }
         })
     
     # Error handlers
