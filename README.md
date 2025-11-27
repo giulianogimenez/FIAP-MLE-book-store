@@ -10,13 +10,23 @@ Este projeto faz parte do **Tech Challenge** do curso de **Pós-Graduação em M
 2. **Web Scraping** automatizado para coleta de dados de livros
 3. **Sistema de Autenticação** com controle de acesso baseado em roles (RBAC)
 
-### 🌐 Deploy em Produção
+### 🌐 Ambientes de Deploy
 
-A aplicação está disponível em:
+A aplicação possui dois ambientes no Heroku:
 
-**🔗 URL:** https://fiap-mle-bookstore-b6b8fff02e9d.herokuapp.com
+#### 🔵 Staging (Homologação)
+- **URL**: https://fiap-mle-bookstore-staging-d571c9f02bed.herokuapp.com
+- **API**: https://fiap-mle-bookstore-staging-d571c9f02bed.herokuapp.com/api/v1
+- **Swagger**: https://fiap-mle-bookstore-staging-d571c9f02bed.herokuapp.com/api/v1/docs
+- **Uso**: Testes e validação antes de produção
 
-**📖 Documentação Swagger:** https://fiap-mle-bookstore-b6b8fff02e9d.herokuapp.com/api/v1/docs
+#### 🟢 Production (Produção)
+- **URL**: https://fiap-mle-bookstore-prod-d748bdd0abdc.herokuapp.com
+- **API**: https://fiap-mle-bookstore-prod-d748bdd0abdc.herokuapp.com/api/v1
+- **Swagger**: https://fiap-mle-bookstore-prod-d748bdd0abdc.herokuapp.com/api/v1/docs
+- **Uso**: Ambiente de produção estável
+
+> 📘 **Guia de Deployment**: Consulte [DEPLOYMENT.md](DEPLOYMENT.md) para instruções detalhadas de deploy
 
 ### 🎓 Objetivos de Aprendizado
 
