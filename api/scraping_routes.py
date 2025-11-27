@@ -44,7 +44,7 @@ def trigger_scraping():
               example: 3
               minimum: 1
               maximum: 50
-              description: Número de páginas a fazer scraping (default: 2)
+              description: "Número de páginas a fazer scraping (padrão: 2)"
             format:
               type: string
               enum:
@@ -52,11 +52,11 @@ def trigger_scraping():
                 - csv
                 - both
               example: both
-              description: Formato de saída (default: both)
+              description: "Formato de saída (padrão: both)"
             output:
               type: string
               example: books
-              description: Nome do arquivo de saída (default: books)
+              description: "Nome do arquivo de saída (padrão: books)"
     responses:
       202:
         description: Job de scraping iniciado
