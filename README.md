@@ -163,13 +163,6 @@ FIAP-MLE-book-store/
 │   ├── data_processor.py         # Processamento de dados
 │   └── main.py                   # CLI
 │
-├── 📂 dashboard/                   # Admin Dashboard (Streamlit)
-│   ├── README.md                  # Documentação do dashboard
-│   ├── app.py                     # Aplicação Streamlit
-│   ├── auth.py                    # Autenticação do dashboard
-│   ├── api_client.py              # Cliente da API
-│   └── requirements-dashboard.txt # Dependências do dashboard
-│
 ├── 📂 examples/                    # Exemplos de uso
 │   ├── README.md
 │   ├── api_examples.py
@@ -193,7 +186,6 @@ FIAP-MLE-book-store/
 ├── requirements.txt               # Dependências Python (API)
 ├── run_api.py                    # Iniciar API
 ├── run_scraper.py                # Iniciar scraper
-├── run_dashboard.py              # Iniciar dashboard (admin)
 ├── Procfile                      # Heroku config
 └── docker-compose.yml            # Docker setup
 ```
@@ -242,16 +234,19 @@ FIAP-MLE-book-store/
 
 **🔗 [Swagger Staging](https://fiap-mle-bookstore-staging-d571c9f02bed.herokuapp.com/api/v1/docs)** | **[Swagger Production](https://fiap-mle-bookstore-prod-d748bdd0abdc.herokuapp.com/api/v1/docs)**
 
-### 📊 Admin Dashboard (Streamlit)
+### 📊 Admin Dashboard (`/api/v1/metrics`)
 
-- ✅ Dashboard interativo de monitoramento
-- ✅ Métricas e analytics em tempo real
-- ✅ Visualizações de dados (gráficos)
-- ✅ Gerenciamento de jobs de scraping
-- ✅ Acesso restrito a administradores
-- ✅ Auto-refresh configurável
+- ✅ Dashboard HTML interativo de métricas
+- ✅ Visualizações com Chart.js (gráficos interativos)
+- ✅ Health checks detalhados da API
+- ✅ Analytics de livros e categorias
+- ✅ Acesso restrito a administradores (JWT + admin role)
+- ✅ Auto-refresh configurável (30s)
+- ✅ Responsive design moderno
 
-**📖 [Documentação do Dashboard](dashboard/README.md)**
+**🔗 [Dashboard Staging](https://fiap-mle-bookstore-staging-d571c9f02bed.herokuapp.com/api/v1/metrics)** | **[Dashboard Production](https://fiap-mle-bookstore-prod-d748bdd0abdc.herokuapp.com/api/v1/metrics)**
+
+> **Nota:** Acesse primeiro o Swagger para fazer login e obter um token JWT, depois use esse token no header Authorization para acessar o dashboard.
 
 ---
 
@@ -285,6 +280,12 @@ FIAP-MLE-book-store/
 | POST | `/api/v1/scraping/trigger` | Iniciar scraping (adiciona livros) |
 | GET | `/api/v1/scraping/jobs` | Listar jobs |
 | GET | `/api/v1/scraping/jobs/:id` | Status do job |
+
+### Admin Dashboard (Requer Admin)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/api/v1/metrics` | Dashboard HTML interativo com métricas e gráficos |
 
 **📖 Documentação completa**: [API README](api/README.md)
 
