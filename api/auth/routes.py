@@ -1,5 +1,9 @@
 """
 Authentication routes
+
+Follows Dependency Inversion Principle (DIP):
+- Routes depend on UserRepository abstraction
+- Repository instance is created here (can be injected from app.py in future)
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import (
@@ -9,9 +13,13 @@ from flask_jwt_extended import (
     get_jwt_identity,
     get_jwt
 )
-from api.auth.models import user_repository
+from api.auth.models import UserRepository
 
 auth_bp = Blueprint('auth', __name__)
+
+# Dependency Injection: Create repository instance
+# In production, inject this from app factory
+user_repository = UserRepository(csv_file='data/users.csv')
 
 
 @auth_bp.route('/login', methods=['POST'])

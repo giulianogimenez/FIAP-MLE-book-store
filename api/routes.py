@@ -1,13 +1,21 @@
 """
 API Routes and Endpoints
+
+Follows Dependency Inversion Principle (DIP):
+- Routes depend on abstractions (controllers)
+- Controllers are injected with dependencies (repositories)
 """
 from flask import Blueprint, jsonify, request, render_template
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from api.controllers.book_controller import BookController
+from api.repositories.book_repository import BookRepository
 from api.auth.decorators import admin_required
 
 api_bp = Blueprint('api', __name__)
-book_controller = BookController()
+
+# Dependency Injection: Controller depends on Repository
+book_repository = BookRepository(data_file='data/output/books.json')
+book_controller = BookController(repository=book_repository)
 
 
 @api_bp.route('/books', methods=['GET'])

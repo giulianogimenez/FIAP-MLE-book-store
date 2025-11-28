@@ -1,50 +1,62 @@
 """
 Book Controller - Business logic for book operations
+
+Follows SOLID principles:
+- SRP: Responsible ONLY for business logic
+- DIP: Depends on BookRepository abstraction, not concrete data source
+- OCP: Extensible without modification
+
+Read-Only API: No create/update/delete methods (handled by scraping only)
 """
+from typing import Dict, Any, List
+from api.repositories.book_repository import BookRepository
 
 
 class BookController:
     """
-    Controller for book-related operations
+    Controller for book-related business logic
+    
+    Responsibilities:
+    - Pagination logic
+    - Search and filtering
+    - Statistics calculation
+    - Data transformation for API responses
     """
     
-    def __init__(self):
-        # Simulated in-memory database
-        self.books = [
-            {
-                'id': 1,
-                'title': 'Python Machine Learning',
-                'author': 'Sebastian Raschka',
-                'isbn': '978-1789955750',
-                'price': 44.99,
-                'category': 'Technology'
-            },
-            {
-                'id': 2,
-                'title': 'Clean Code',
-                'author': 'Robert C. Martin',
-                'isbn': '978-0132350884',
-                'price': 39.99,
-                'category': 'Technology'
-            }
-        ]
-        self.next_id = 3
+    def __init__(self, repository: BookRepository):
+        """
+        Initialize controller with repository (Dependency Injection)
+        
+        Args:
+            repository: BookRepository instance for data access
+        """
+        self.repository = repository
     
-    def get_all_books(self, page=1, limit=10, search=''):
+    def get_all_books(self, page: int = 1, limit: int = 10, search: str = '') -> Dict[str, Any]:
         """
         Get all books with pagination and search
-        """
-        filtered_books = self.books
         
+        Args:
+            page: Page number (1-indexed)
+            limit: Books per page
+            search: Search term for title/author
+        
+        Returns:
+            Dictionary with paginated books and metadata
+        """
+        all_books = self.repository.find_all()
+        filtered_books = all_books
+        
+        # Apply search filter
         if search:
             search_lower = search.lower()
             filtered_books = [
-                book for book in self.books
-                if search_lower in book['title'].lower() or 
-                   search_lower in book['author'].lower()
+                book for book in all_books
+                if search_lower in book.get('title', '').lower() or 
+                   search_lower in book.get('author', '').lower()
             ]
         
-        # Pagination
+        # Calculate pagination
         start = (page - 1) * limit
         end = start + limit
         paginated_books = filtered_books[start:end]
@@ -57,89 +69,47 @@ class BookController:
             'total_pages': (len(filtered_books) + limit - 1) // limit
         }
     
-    def get_book_by_id(self, book_id):
+    def get_book_by_id(self, book_id: int) -> Dict[str, Any]:
         """
         Get a specific book by ID
+        
+        Args:
+            book_id: Book identifier
+        
+        Returns:
+            Dictionary with book or error message
         """
-        book = next((b for b in self.books if b['id'] == book_id), None)
+        book = self.repository.find_by_id(book_id)
+        
         if not book:
             return {'error': 'Book not found'}
+        
         return {'book': book}
     
-    def create_book(self, data):
+    def get_statistics(self) -> Dict[str, Any]:
         """
-        Create a new book
-        """
-        required_fields = ['title', 'author', 'isbn', 'price']
-        for field in required_fields:
-            if field not in data:
-                return {'error': f'Missing required field: {field}'}
+        Calculate statistics about the book collection
         
-        new_book = {
-            'id': self.next_id,
-            'title': data['title'],
-            'author': data['author'],
-            'isbn': data['isbn'],
-            'price': float(data['price']),
-            'category': data.get('category', 'General')
-        }
+        Returns:
+            Dictionary with statistics (total, average price, categories)
+        """
+        books = self.repository.find_all()
         
-        self.books.append(new_book)
-        self.next_id += 1
-        
-        return {'message': 'Book created successfully', 'book': new_book}
-    
-    def update_book(self, book_id, data):
-        """
-        Update an existing book
-        """
-        book = next((b for b in self.books if b['id'] == book_id), None)
-        if not book:
-            return {'error': 'Book not found'}
-        
-        # Update fields
-        if 'title' in data:
-            book['title'] = data['title']
-        if 'author' in data:
-            book['author'] = data['author']
-        if 'isbn' in data:
-            book['isbn'] = data['isbn']
-        if 'price' in data:
-            book['price'] = float(data['price'])
-        if 'category' in data:
-            book['category'] = data['category']
-        
-        return {'message': 'Book updated successfully', 'book': book}
-    
-    def delete_book(self, book_id):
-        """
-        Delete a book
-        """
-        book = next((b for b in self.books if b['id'] == book_id), None)
-        if not book:
-            return {'error': 'Book not found'}
-        
-        self.books.remove(book)
-        return {'message': 'Book deleted successfully'}
-    
-    def get_statistics(self):
-        """
-        Get statistics about the book collection
-        """
-        if not self.books:
+        if not books:
             return {
                 'total_books': 0,
                 'average_price': 0,
                 'categories': {}
             }
         
-        total = len(self.books)
-        avg_price = sum(b['price'] for b in self.books) / total
+        total = len(books)
+        avg_price = sum(book.get('price', 0) for book in books) / total
         
-        categories = {}
-        for book in self.books:
-            cat = book.get('category', 'General')
-            categories[cat] = categories.get(cat, 0) + 1
+        # Count books per category
+        categories: Dict[str, int] = {}
+        for book in books:
+            category = book.get('category', 'General')
+            categories[category] = categories.get(category, 0) + 1
         
         return {
             'total_books': total,
@@ -147,54 +117,61 @@ class BookController:
             'categories': categories
         }
     
-    def get_categories(self):
+    def get_categories(self) -> Dict[str, Any]:
         """
-        Get all unique book categories
+        Get all unique book categories with book counts
+        
+        Returns:
+            Dictionary with category list and total count
         """
-        if not self.books:
+        books = self.repository.find_all()
+        
+        if not books:
             return {
                 'categories': [],
                 'total': 0
             }
         
-        # Extract unique categories
-        categories = set()
-        for book in self.books:
-            cat = book.get('category', 'General')
-            categories.add(cat)
+        # Extract and count categories
+        category_counts: Dict[str, int] = {}
+        for book in books:
+            category = book.get('category', 'General')
+            category_counts[category] = category_counts.get(category, 0) + 1
         
-        # Sort categories alphabetically
-        sorted_categories = sorted(list(categories))
-        
-        # Count books per category
-        category_details = []
-        for cat in sorted_categories:
-            count = sum(1 for book in self.books if book.get('category', 'General') == cat)
-            category_details.append({
-                'name': cat,
-                'count': count
-            })
+        # Build sorted category details
+        category_details = sorted([
+            {'name': cat, 'count': count}
+            for cat, count in category_counts.items()
+        ], key=lambda x: x['name'])
         
         return {
             'categories': category_details,
-            'total': len(sorted_categories)
+            'total': len(category_details)
         }
     
-    def search_books(self, title=None, category=None):
+    def search_books(self, title: str = None, category: str = None) -> Dict[str, Any]:
         """
         Search books by title and/or category
-        """
-        filtered_books = self.books
         
-        # Filter by title if provided
+        Args:
+            title: Partial title search (case-insensitive)
+            category: Exact category match (case-insensitive)
+        
+        Returns:
+            Dictionary with filtered books and count
+        """
+        books = self.repository.find_all()
+        filtered_books = books
+        
+        # Filter by title (partial match)
         if title:
             title_lower = title.lower()
             filtered_books = [
                 book for book in filtered_books
-                if title_lower in book['title'].lower()
+                if title_lower in book.get('title', '').lower()
             ]
         
-        # Filter by category if provided
+        # Filter by category (exact match)
         if category:
             category_lower = category.lower()
             filtered_books = [
@@ -206,4 +183,11 @@ class BookController:
             'books': filtered_books,
             'total': len(filtered_books)
         }
-
+    
+    def reload_books(self) -> None:
+        """
+        Reload books from data source
+        
+        Useful after scraping operations that update the data file
+        """
+        self.repository.reload()
