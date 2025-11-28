@@ -287,41 +287,19 @@ def get_categories():
 
 
 @api_bp.route('/metrics', methods=['GET'])
-@jwt_required()
-@admin_required()
 def metrics_dashboard():
     """
-    Admin Dashboard - Métricas e Monitoramento da API
+    Admin Dashboard - Métricas e Monitoramento da API (com autenticação integrada)
     ---
     tags:
       - Metrics
-    security:
-      - Bearer: []
     responses:
       200:
-        description: Dashboard de métricas (HTML)
+        description: Dashboard de métricas ou página de login (HTML)
         content:
           text/html:
             schema:
               type: string
-      401:
-        description: Não autorizado (token inválido ou faltando)
-      403:
-        description: Proibido (usuário não é admin)
     """
-    # Get JWT claims
-    claims = get_jwt()
-    identity = get_jwt_identity()
-    
-    # Get token from request header
-    from flask import request as flask_request
-    auth_header = flask_request.headers.get('Authorization', '')
-    token = auth_header.replace('Bearer ', '') if auth_header.startswith('Bearer ') else ''
-    
-    # Render template with user info and token
-    return render_template(
-        'metrics.html',
-        username=identity,
-        role=claims.get('role', 'user'),
-        token=token
-    )
+    # Render login page with integrated authentication
+    return render_template('metrics_login.html')
