@@ -163,6 +163,13 @@ FIAP-MLE-book-store/
 │   ├── data_processor.py         # Processamento de dados
 │   └── main.py                   # CLI
 │
+├── 📂 dashboard/                   # Admin Dashboard (Streamlit)
+│   ├── README.md                  # Documentação do dashboard
+│   ├── app.py                     # Aplicação Streamlit
+│   ├── auth.py                    # Autenticação do dashboard
+│   ├── api_client.py              # Cliente da API
+│   └── requirements-dashboard.txt # Dependências do dashboard
+│
 ├── 📂 examples/                    # Exemplos de uso
 │   ├── README.md
 │   ├── api_examples.py
@@ -183,9 +190,10 @@ FIAP-MLE-book-store/
 │   ├── users.csv                 # Usuários (JWT)
 │   └── output/                   # Scraping outputs
 │
-├── requirements.txt               # Dependências Python
+├── requirements.txt               # Dependências Python (API)
 ├── run_api.py                    # Iniciar API
 ├── run_scraper.py                # Iniciar scraper
+├── run_dashboard.py              # Iniciar dashboard (admin)
 ├── Procfile                      # Heroku config
 └── docker-compose.yml            # Docker setup
 ```
@@ -233,6 +241,17 @@ FIAP-MLE-book-store/
 - ✅ Exemplos de request/response
 
 **🔗 [Swagger Staging](https://fiap-mle-bookstore-staging-d571c9f02bed.herokuapp.com/api/v1/docs)** | **[Swagger Production](https://fiap-mle-bookstore-prod-d748bdd0abdc.herokuapp.com/api/v1/docs)**
+
+### 📊 Admin Dashboard (Streamlit)
+
+- ✅ Dashboard interativo de monitoramento
+- ✅ Métricas e analytics em tempo real
+- ✅ Visualizações de dados (gráficos)
+- ✅ Gerenciamento de jobs de scraping
+- ✅ Acesso restrito a administradores
+- ✅ Auto-refresh configurável
+
+**📖 [Documentação do Dashboard](dashboard/README.md)**
 
 ---
 
