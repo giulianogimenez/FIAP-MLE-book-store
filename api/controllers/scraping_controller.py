@@ -96,9 +96,12 @@ class ScrapingController:
             # Create scraper
             scraper = BookScraper(base_url=url, delay=1.0)
             
-            # Scrape data
-            books = scraper.scrape(max_pages=pages)
+            # Scrape data with detailed information (UPC, category, ISBN, etc.)
+            logger.info(f"Scraping {pages} pages with detailed information enabled")
+            books = scraper.scrape(max_pages=pages, fetch_details=True)
             scraper.close()
+            
+            logger.info(f"Scraped {len(books)} books with complete details")
             
             if not books:
                 self.active_jobs[job_id]['status'] = 'completed'
