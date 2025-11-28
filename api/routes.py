@@ -19,12 +19,15 @@ book_controller = BookController(repository=book_repository)
 
 
 @api_bp.route('/books', methods=['GET'])
+@jwt_required()
 def get_books():
     """
-    Listar todos os livros
+    Listar todos os livros (requer autenticação)
     ---
     tags:
       - Books
+    security:
+      - Bearer: []
     parameters:
       - name: page
         in: query
@@ -91,12 +94,15 @@ def get_books():
 
 
 @api_bp.route('/books/<int:book_id>', methods=['GET'])
+@jwt_required()
 def get_book(book_id):
     """
-    Buscar livro específico por ID
+    Buscar livro específico por ID (requer autenticação)
     ---
     tags:
       - Books
+    security:
+      - Bearer: []
     parameters:
       - name: book_id
         in: path
@@ -140,12 +146,15 @@ def get_book(book_id):
 
 
 @api_bp.route('/books/search', methods=['GET'])
+@jwt_required()
 def search_books():
     """
-    Buscar livros por título e/ou categoria
+    Buscar livros por título e/ou categoria (requer autenticação)
     ---
     tags:
       - Books
+    security:
+      - Bearer: []
     parameters:
       - name: title
         in: query
@@ -217,12 +226,15 @@ def search_books():
 
 
 @api_bp.route('/stats', methods=['GET'])
+@jwt_required()
 def get_stats():
     """
-    Obter estatísticas da coleção
+    Obter estatísticas da coleção (requer autenticação)
     ---
     tags:
       - Books
+    security:
+      - Bearer: []
     responses:
       200:
         description: Estatísticas da coleção de livros
@@ -250,12 +262,15 @@ def get_stats():
 
 
 @api_bp.route('/categories', methods=['GET'])
+@jwt_required()
 def get_categories():
     """
-    Listar todas as categorias de livros disponíveis
+    Listar todas as categorias de livros disponíveis (requer autenticação)
     ---
     tags:
       - Books
+    security:
+      - Bearer: []
     responses:
       200:
         description: Lista de categorias disponíveis
