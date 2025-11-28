@@ -1,8 +1,10 @@
 """
 API Routes and Endpoints
 """
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from api.controllers.book_controller import BookController
+from api.auth.decorators import admin_required
 
 api_bp = Blueprint('api', __name__)
 book_controller = BookController()
@@ -282,3 +284,44 @@ def get_categories():
     """
     result = book_controller.get_categories()
     return jsonify(result)
+
+
+@api_bp.route('/metrics', methods=['GET'])
+@jwt_required()
+@admin_required()
+def metrics_dashboard():
+    """
+    Admin Dashboard - Métricas e Monitoramento da API
+    ---
+    tags:
+      - Metrics
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: Dashboard de métricas (HTML)
+        content:
+          text/html:
+            schema:
+              type: string
+      401:
+        description: Não autorizado (token inválido ou faltando)
+      403:
+        description: Proibido (usuário não é admin)
+    """
+    # Get JWT claims
+    claims = get_jwt()
+    identity = get_jwt_identity()
+    
+    # Get token from request header
+    from flask import request as flask_request
+    auth_header = flask_request.headers.get('Authorization', '')
+    token = auth_header.replace('Bearer ', '') if auth_header.startswith('Bearer ') else ''
+    
+    # Render template with user info and token
+    return render_template(
+        'metrics.html',
+        username=identity,
+        role=claims.get('role', 'user'),
+        token=token
+    )
