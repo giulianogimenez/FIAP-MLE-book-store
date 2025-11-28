@@ -37,13 +37,26 @@ class BookController:
         Get all books with pagination and search
         
         Args:
-            page: Page number (1-indexed)
-            limit: Books per page
+            page: Page number (1-indexed, must be >= 1)
+            limit: Books per page (must be > 0, max 100)
             search: Search term for title/author
         
         Returns:
             Dictionary with paginated books and metadata
+        
+        Raises:
+            ValueError: If page < 1 or limit <= 0 or limit > 100
         """
+        # Input validation (Fail Fast principle)
+        if page < 1:
+            raise ValueError(f"Invalid page number: {page}. Page must be >= 1")
+        
+        if limit <= 0:
+            raise ValueError(f"Invalid limit: {limit}. Limit must be > 0")
+        
+        if limit > 100:
+            raise ValueError(f"Invalid limit: {limit}. Maximum limit is 100")
+        
         all_books = self.repository.find_all()
         filtered_books = all_books
         
@@ -61,12 +74,15 @@ class BookController:
         end = start + limit
         paginated_books = filtered_books[start:end]
         
+        # Calculate total pages safely (limit is guaranteed > 0 here)
+        total_pages = (len(filtered_books) + limit - 1) // limit if len(filtered_books) > 0 else 0
+        
         return {
             'books': paginated_books,
             'total': len(filtered_books),
             'page': page,
             'limit': limit,
-            'total_pages': (len(filtered_books) + limit - 1) // limit
+            'total_pages': total_pages
         }
     
     def get_book_by_id(self, book_id: int) -> Dict[str, Any]:

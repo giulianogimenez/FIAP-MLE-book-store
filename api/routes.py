@@ -33,12 +33,15 @@ def get_books():
         in: query
         type: integer
         default: 1
-        description: Número da página
+        description: "Número da página (mínimo: 1)"
+        minimum: 1
       - name: limit
         in: query
         type: integer
         default: 10
-        description: Livros por página
+        description: "Livros por página (mínimo: 1, máximo: 100)"
+        minimum: 1
+        maximum: 100
       - name: search
         in: query
         type: string
@@ -84,13 +87,30 @@ def get_books():
             total_pages:
               type: integer
               example: 1
+      400:
+        description: Parâmetros inválidos
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Bad Request"
+            message:
+              type: string
+              example: "Invalid page number: 0. Page must be >= 1"
     """
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 10, type=int)
     search = request.args.get('search', '', type=str)
     
-    result = book_controller.get_all_books(page=page, limit=limit, search=search)
-    return jsonify(result)
+    try:
+        result = book_controller.get_all_books(page=page, limit=limit, search=search)
+        return jsonify(result)
+    except ValueError as e:
+        return jsonify({
+            'error': 'Bad Request',
+            'message': str(e)
+        }), 400
 
 
 @api_bp.route('/books/<int:book_id>', methods=['GET'])
