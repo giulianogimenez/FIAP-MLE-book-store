@@ -137,6 +137,8 @@ class ScrapingController:
             }
             
             logger.info(f"Scraping job {job_id} completed successfully")
+            logger.info(f"Saved {len(cleaned_books)} books to {saved_files}")
+            logger.info("Note: BookRepository will auto-reload on next API request (file mtime check)")
             
         except Exception as e:
             logger.error(f"Scraping job {job_id} failed: {e}")

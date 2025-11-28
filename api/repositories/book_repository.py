@@ -29,15 +29,28 @@ class BookRepository:
         """
         self.data_file = data_file
         self._books_cache: Optional[List[Dict[str, Any]]] = None
+        self._last_modified: Optional[float] = None  # Track file modification time
     
     def find_all(self) -> List[Dict[str, Any]]:
         """
         Retrieve all books from data source
         
+        Automatically reloads if the data file has been modified since last load.
+        This ensures fresh data after scraping operations.
+        
         Returns:
             List of book dictionaries
         """
-        if self._books_cache is None:
+        # Check if file was modified since last load
+        needs_reload = False
+        
+        if os.path.exists(self.data_file):
+            current_mtime = os.path.getmtime(self.data_file)
+            if self._last_modified is None or current_mtime > self._last_modified:
+                needs_reload = True
+                logger.info(f"Data file modified, reloading books from {self.data_file}")
+        
+        if self._books_cache is None or needs_reload:
             self._load_books()
         
         return self._books_cache or []
@@ -68,31 +81,40 @@ class BookRepository:
         """
         Force reload of books from data source
         
-        Useful after scraping operations that update the data file
+        Useful after scraping operations that update the data file.
+        Resets cache and modification time to force fresh load.
         """
         self._books_cache = None
+        self._last_modified = None
         self._load_books()
     
     def _load_books(self) -> None:
         """
         Load books from JSON file (private method)
         
-        Uses default books if file doesn't exist
+        Uses default books if file doesn't exist.
+        Records file modification time for auto-reload detection.
         """
         try:
             if os.path.exists(self.data_file):
+                # Record modification time BEFORE loading
+                self._last_modified = os.path.getmtime(self.data_file)
+                
                 with open(self.data_file, 'r', encoding='utf-8') as f:
                     self._books_cache = json.load(f)
                 logger.info(f"Loaded {len(self._books_cache)} books from {self.data_file}")
             else:
                 logger.warning(f"Data file {self.data_file} not found, using default books")
                 self._books_cache = self._get_default_books()
+                self._last_modified = None
         except json.JSONDecodeError as e:
             logger.error(f"Error decoding JSON from {self.data_file}: {e}")
             self._books_cache = self._get_default_books()
+            self._last_modified = None
         except Exception as e:
             logger.error(f"Error loading books from {self.data_file}: {e}")
             self._books_cache = self._get_default_books()
+            self._last_modified = None
     
     def _get_default_books(self) -> List[Dict[str, Any]]:
         """
