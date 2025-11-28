@@ -92,29 +92,16 @@ curl "http://localhost:5000/api/v1/books/search?category=Technology" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-### 3. Criar um Livro
-
-```bash
-curl -X POST http://localhost:5000/api/v1/books \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Meu Livro",
-    "author": "Autor",
-    "isbn": "123-456",
-    "price": 29.99,
-    "category": "Technology"
-  }'
-```
-
-### 4. Listar Categorias
+### 3. Listar Categorias
 
 ```bash
 curl http://localhost:5000/api/v1/categories \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-## 🕷️ Executar Web Scraping
+## 🕷️ Adicionar Livros via Web Scraping
+
+> ℹ️ **Importante**: A adição, edição e exclusão de livros só pode ser feita via scraping.
 
 ### Via CLI
 
@@ -125,6 +112,15 @@ python run_scraper.py --pages 3 --format both
 ### Via API (requer role admin)
 
 ```bash
+# Login como admin
+curl -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}' \
+  > admin_login.json
+
+ADMIN_TOKEN=$(cat admin_login.json | jq -r '.access_token')
+
+# Iniciar scraping (adiciona livros)
 curl -X POST http://localhost:5000/api/v1/scraping/trigger \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \

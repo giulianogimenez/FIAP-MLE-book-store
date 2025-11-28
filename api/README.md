@@ -78,24 +78,23 @@ class Config:
     DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
 ```
 
-### `routes.py` - Rotas de Books
+### `routes.py` - Rotas de Books (Read-Only)
 
-Endpoints CRUD para livros:
+Endpoints de consulta para livros:
 
 - `GET /api/v1/books` - Listar livros (paginação, busca)
 - `GET /api/v1/books/search` - Buscar por título/categoria
 - `GET /api/v1/books/:id` - Buscar por ID
-- `POST /api/v1/books` - Criar livro
-- `PUT /api/v1/books/:id` - Atualizar livro
-- `DELETE /api/v1/books/:id` - Deletar livro
 - `GET /api/v1/categories` - Listar categorias
 - `GET /api/v1/stats` - Estatísticas
 
-### `scraping_routes.py` - Rotas de Scraping
+> **Nota**: Operações de criação, atualização e exclusão são realizadas exclusivamente via scraping.
 
-Endpoints para web scraping (requer admin):
+### `scraping_routes.py` - Rotas de Scraping (Fonte de Dados)
 
-- `POST /api/v1/scraping/trigger` - Iniciar scraping
+Endpoints para web scraping (requer admin) - **Única forma de adicionar/modificar livros**:
+
+- `POST /api/v1/scraping/trigger` - Iniciar scraping (adiciona livros)
 - `GET /api/v1/scraping/jobs` - Listar jobs
 - `GET /api/v1/scraping/jobs/:id` - Status do job
 
@@ -190,26 +189,25 @@ python -c "import secrets; print(secrets.token_hex(32))"
 | `/api/v1/auth/login` | POST | Login |
 | `/api/v1/auth/register` | POST | Registrar |
 
-### Endpoints Protegidos (JWT Required)
+### Endpoints Protegidos (JWT Required - Read-Only)
 
 | Endpoint | Método | Role | Descrição |
 |----------|--------|------|-----------|
 | `/api/v1/books` | GET | user/admin | Listar livros |
 | `/api/v1/books/search` | GET | user/admin | Buscar livros |
 | `/api/v1/books/:id` | GET | user/admin | Buscar por ID |
-| `/api/v1/books` | POST | user/admin | Criar livro |
-| `/api/v1/books/:id` | PUT | user/admin | Atualizar |
-| `/api/v1/books/:id` | DELETE | user/admin | Deletar |
 | `/api/v1/categories` | GET | user/admin | Categorias |
 | `/api/v1/stats` | GET | user/admin | Estatísticas |
 | `/api/v1/auth/me` | GET | user/admin | Info usuário |
 | `/api/v1/auth/refresh` | POST | user/admin | Renovar token |
 
-### Endpoints Admin
+> ℹ️ **Nota**: POST, PUT e DELETE de livros foram removidos. Use scraping para adicionar/modificar livros.
+
+### Endpoints Admin (Fonte de Dados)
 
 | Endpoint | Método | Descrição |
 |----------|--------|-----------|
-| `/api/v1/scraping/trigger` | POST | Iniciar scraping |
+| `/api/v1/scraping/trigger` | POST | Iniciar scraping (adiciona livros) |
 | `/api/v1/scraping/jobs` | GET | Listar jobs |
 | `/api/v1/scraping/jobs/:id` | GET | Status do job |
 

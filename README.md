@@ -203,23 +203,25 @@ FIAP-MLE-book-store/
 
 **📖 [Documentação Completa](docs/AUTHENTICATION.md)**
 
-### 📚 API de Livros
+### 📚 API de Livros (Read-Only)
 
-- ✅ CRUD completo (Create, Read, Update, Delete)
+- ✅ Consulta de livros (apenas leitura)
 - ✅ Paginação e busca
 - ✅ Busca avançada (título + categoria)
 - ✅ Listagem de categorias
 - ✅ Estatísticas da coleção
+- ℹ️ **Adição/Edição/Exclusão apenas via Scraping**
 
 **📖 [Documentação da API](api/README.md)**
 
-### 🕷️ Web Scraping
+### 🕷️ Web Scraping (Fonte de Dados)
 
 - ✅ Coleta automatizada de books.toscrape.com
 - ✅ Exportação em JSON, CSV ou ambos
 - ✅ Sistema de jobs com rastreamento
-- ✅ Execução via API ou CLI
+- ✅ Execução via API (admin) ou CLI
 - ✅ Rate limiting e scraping responsável
+- ℹ️ **Única forma de adicionar/modificar livros**
 
 **📖 [Documentação do Scraper](scraper/README.md)**
 
@@ -245,24 +247,23 @@ FIAP-MLE-book-store/
 | POST | `/api/v1/auth/register` | Registrar novo usuário |
 | GET | `/api/v1/auth/me` | Info do usuário logado |
 
-### Books (Requer Token)
+### Books (Requer Token - Read-Only)
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
 | GET | `/api/v1/books` | Listar livros (paginação) |
 | GET | `/api/v1/books/search` | Buscar (título/categoria) |
 | GET | `/api/v1/books/:id` | Buscar por ID |
-| POST | `/api/v1/books` | Criar livro |
-| PUT | `/api/v1/books/:id` | Atualizar livro |
-| DELETE | `/api/v1/books/:id` | Deletar livro |
 | GET | `/api/v1/categories` | Listar categorias |
 | GET | `/api/v1/stats` | Estatísticas |
 
-### Scraping (Requer Admin)
+> ℹ️ **Nota**: Adição, edição e exclusão de livros são realizadas exclusivamente via scraping.
+
+### Scraping (Requer Admin - Fonte de Dados)
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| POST | `/api/v1/scraping/trigger` | Iniciar scraping |
+| POST | `/api/v1/scraping/trigger` | Iniciar scraping (adiciona livros) |
 | GET | `/api/v1/scraping/jobs` | Listar jobs |
 | GET | `/api/v1/scraping/jobs/:id` | Status do job |
 
