@@ -55,12 +55,12 @@ class BookRepository:
         
         return self._books_cache or []
     
-    def find_by_id(self, book_id: int) -> Optional[Dict[str, Any]]:
+    def find_by_id(self, book_id: str) -> Optional[Dict[str, Any]]:
         """
-        Find a specific book by ID
+        Find a specific book by ID (UUID4)
         
         Args:
-            book_id: Book identifier
+            book_id: Book identifier (UUID4 string)
         
         Returns:
             Book dictionary or None if not found

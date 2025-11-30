@@ -2,6 +2,7 @@
 Book Scraper - Scrapes book information from websites
 """
 import logging
+import uuid
 from typing import List, Dict, Any
 from scraper.base_scraper import BaseScraper
 
@@ -126,6 +127,7 @@ class BookScraper(BaseScraper):
             full_url = ''
         
         return {
+            'id': str(uuid.uuid4()),  # Generate unique UUID4 for each book
             'title': title,
             'price': price,
             'rating': rating,

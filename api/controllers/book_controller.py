@@ -85,12 +85,12 @@ class BookController:
             'total_pages': total_pages
         }
     
-    def get_book_by_id(self, book_id: int) -> Dict[str, Any]:
+    def get_book_by_id(self, book_id: str) -> Dict[str, Any]:
         """
-        Get a specific book by ID
+        Get a specific book by ID (UUID4)
         
         Args:
-            book_id: Book identifier
+            book_id: Book identifier (UUID4 string)
         
         Returns:
             Dictionary with book or error message

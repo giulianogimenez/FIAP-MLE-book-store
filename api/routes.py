@@ -117,11 +117,11 @@ def get_books():
         }), 400
 
 
-@api_bp.route('/books/<int:book_id>', methods=['GET'])
+@api_bp.route('/books/<string:book_id>', methods=['GET'])
 @jwt_required()
 def get_book(book_id):
     """
-    Buscar livro específico por ID (requer autenticação)
+    Buscar livro específico por ID UUID (requer autenticação)
     ---
     tags:
       - Books
@@ -130,9 +130,10 @@ def get_book(book_id):
     parameters:
       - name: book_id
         in: path
-        type: integer
+        type: string
         required: true
-        description: ID do livro
+        description: ID do livro (UUID4)
+        example: "550e8400-e29b-41d4-a716-446655440000"
     responses:
       200:
         description: Detalhes do livro
@@ -143,17 +144,25 @@ def get_book(book_id):
               type: object
               properties:
                 id:
-                  type: integer
+                  type: string
+                  example: "550e8400-e29b-41d4-a716-446655440000"
+                  description: ID único do livro (UUID4)
                 title:
                   type: string
                 author:
                   type: string
                 isbn:
                   type: string
+                upc:
+                  type: string
                 price:
                   type: number
                 category:
                   type: string
+                description:
+                  type: string
+                availability:
+                  type: integer
       404:
         description: Livro não encontrado
         schema:
@@ -165,6 +174,7 @@ def get_book(book_id):
     """
     result = book_controller.get_book_by_id(book_id)
     if result.get('error'):
+        logger.warning(f"Book with ID {book_id} not found.")
         return jsonify(result), 404
     return jsonify(result)
 
