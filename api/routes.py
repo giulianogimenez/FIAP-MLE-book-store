@@ -5,11 +5,15 @@ Follows Dependency Inversion Principle (DIP):
 - Routes depend on abstractions (controllers)
 - Controllers are injected with dependencies (repositories)
 """
+import logging
+import pandas as pd
 from flask import Blueprint, jsonify, request, render_template
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from api.controllers.book_controller import BookController
 from api.repositories.book_repository import BookRepository
 from api.auth.decorators import admin_required
+
+logger = logging.getLogger(__name__)
 
 api_bp = Blueprint('api', __name__)
 
@@ -386,7 +390,6 @@ def force_reload():
         books_count = book_repository.count()
         logger.info(f"Manual reload triggered by admin - {books_count} books loaded")
         
-        import pandas as pd
         return jsonify({
             'message': 'Data reloaded successfully',
             'books_count': books_count,
