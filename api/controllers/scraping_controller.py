@@ -138,7 +138,15 @@ class ScrapingController:
             
             logger.info(f"Scraping job {job_id} completed successfully")
             logger.info(f"Saved {len(cleaned_books)} books to {saved_files}")
-            logger.info("Note: BookRepository will auto-reload on next API request (file mtime check)")
+            
+            # INSTANT RELOAD: Force repository to reload data immediately after scraping
+            # This ensures data is available instantly without waiting for next HTTP request
+            try:
+                from api.routes import book_repository
+                book_repository.reload()
+                logger.info(f"✅ INSTANT RELOAD: BookRepository reloaded - {len(cleaned_books)} books now available in API")
+            except Exception as e:
+                logger.warning(f"Could not force immediate reload (will auto-reload on next request): {e}")
             
         except Exception as e:
             logger.error(f"Scraping job {job_id} failed: {e}")

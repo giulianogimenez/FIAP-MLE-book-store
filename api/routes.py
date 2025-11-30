@@ -346,3 +346,55 @@ def metrics_dashboard():
     """
     # Render login page with integrated authentication
     return render_template('metrics_login.html')
+
+
+@api_bp.route('/reload', methods=['POST'])
+@jwt_required()
+@admin_required()
+def force_reload():
+    """
+    Forçar reload imediato dos dados (admin only)
+    ---
+    tags:
+      - Admin
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: Dados recarregados com sucesso
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Data reloaded successfully
+            books_count:
+              type: integer
+              example: 600
+              description: Total de livros após reload
+            timestamp:
+              type: string
+              format: date-time
+              description: Momento do reload
+      401:
+        description: Não autorizado
+      403:
+        description: Acesso negado (apenas admin)
+    """
+    try:
+        book_repository.reload()
+        books_count = book_repository.count()
+        logger.info(f"Manual reload triggered by admin - {books_count} books loaded")
+        
+        import pandas as pd
+        return jsonify({
+            'message': 'Data reloaded successfully',
+            'books_count': books_count,
+            'timestamp': pd.Timestamp.now(tz='UTC').isoformat()
+        }), 200
+    except Exception as e:
+        logger.error(f"Error during manual reload: {e}")
+        return jsonify({
+            'error': 'Reload failed',
+            'message': str(e)
+        }), 500
